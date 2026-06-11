@@ -1,7 +1,0 @@
-{
-  "name": "tube-proxy",
-  "version": "1.0.0",
-  "dependencies": {
-    "@distube/ytdl-core": "^4.15.8"
-  }
-}
