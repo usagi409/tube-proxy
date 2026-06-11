@@ -1,35 +1,28 @@
-const ytdl = require('@distube/ytdl-core');
-
-module.exports = async (req, res) => {
+// Invidious API (オープンソースのYouTubeフロントエンド) を利用する方法
+export default async function handler(req, res) {
   const { url } = req.query;
 
-  if (!url || !ytdl.validateURL(url)) {
-    return res.status(400).json({ error: 'URLを指定してください' });
-  }
+  if (!url) return res.status(400).json({ error: 'URLを指定してください' });
+
+  // YouTubeの動画IDだけを抽出
+  const videoId = url.split('v=')[1]?.split('&')[0];
+  if (!videoId) return res.status(400).json({ error: '正しいURLを入力してください' });
 
   try {
-    // 【対策】ブラウザになりすますためのヘッダーを追加
-    const requestOptions = {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      },
-    };
+    // Invidiousの公開インスタンス経由で動画情報を取得
+    const response = await fetch(`https://invidious.jing.rocks/api/v1/videos/${videoId}`);
+    const data = await response.json();
 
-    // 情報を取得（オプションを渡す）
-    const info = await ytdl.getInfo(url, { requestOptions });
+    // 再生可能なフォーマットを探す
+    const format = data.formatStreams.find(f => f.type.includes('video/mp4'));
     
-    // 映像と音声が含まれるものだけに絞る
-    const format = ytdl.chooseFormat(info.formats, { 
-      quality: 'highest', 
-      filter: 'audioandvideo' 
-    });
-
-    if (!format || !format.url) {
+    if (!format) {
       return res.status(500).json({ error: '再生可能なフォーマットが見つかりませんでした' });
     }
 
+    // 動画直リンクへリダイレクト
     res.redirect(format.url);
   } catch (err) {
     res.status(500).json({ error: '取得失敗: ' + err.message });
   }
-};
+}
