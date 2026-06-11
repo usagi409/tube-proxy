@@ -1,4 +1,4 @@
-const ytdl = require('ytdl-core');
+const ytdl = require('@distube/ytdl-core');
 
 module.exports = async (req, res) => {
   const { url } = req.query;
@@ -11,7 +11,7 @@ module.exports = async (req, res) => {
     const info = await ytdl.getInfo(url);
     const format = ytdl.chooseFormat(info.formats, { quality: 'highest' });
     
-    // 取得した動画リンクへ転送
+    // リダイレクトで動画リンクへ飛ばす
     res.redirect(format.url);
   } catch (err) {
     res.status(500).json({ error: '取得失敗: ' + err.message });
