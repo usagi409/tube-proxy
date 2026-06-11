@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>動画を見るツール</title>
+    <style>
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; gap: 10px; }
+        input { width: 80%; padding: 10px; }
+        button { padding: 10px 20px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h2>動画URLを入力してね</h2>
+    <input type="text" id="url" placeholder="YouTubeのURLを貼り付け">
+    <button onclick="watch()">動画を見る</button>
+
+    <script>
+        async function watch() {
+            const url = document.getElementById('url').value;
+            try {
+                // Cobalt APIという安定した無料サービスを直接叩く
+                const response = await fetch('https://cobalt.api.red/api/json', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify({ url: url, isAudioOnly: false, disableMetadata: true })
+                });
+                const data = await response.json();
+                if (data.url) {
+                    window.location.href = data.url;
+                } else {
+                    alert('取得できなかったよ。別のURLで試してみて！');
+                }
+            } catch (e) {
+                alert('エラーが起きた。ごめん！');
+            }
+        }
+    </script>
+</body>
+</html>
